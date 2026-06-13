@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sonsuz Kosmos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #020208;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Glassmorphism Qeydiyyat Paneli */
+        .login-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            width: 380px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .login-container.hide {
+            opacity: 0;
+            visibility: hidden;
+            transform: translate(-50%, -80%) scale(0.8);
+        }
+
+        .login-container h2 {
+            color: #fff;
+            margin-bottom: 30px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            outline: none;
+            color: #fff;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #ffffff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(45deg, #0055ff, #7f00ff);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.4s;
+            box-shadow: 0 4px 15px rgba(127, 0, 255, 0.4);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 85, 255, 0.6);
+        }
+
+        /* Girişdən sonrakı Xoş Gəldiniz Yazısı */
+        #welcome-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            color: white;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 3s ease-in-out;
+            pointer-events: none;
+        }
+
+        #welcome-text.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #welcome-text h1 {
+            font-size: 3rem;
+            background: linear-gradient(to right, #fff, #999);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+        <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_73530e3760.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="canvas-container"></div>
+
+    <div class="login-container" id="loginBox">
+        <h2>Kainata Giriş</h2>
+        <form id="loginForm" onsubmit="startUniverse(event)">
+            <div class="input-group">
+                <input type="text" placeholder="Adınız" required>
+            </div>
+            <div class="input-group">
+                <input type="password" placeholder="Giriş Kodu" required>
+            </div>
+            <button type="submit" class="submit-btn">Kainatı Başlat</button>
+        </form>
+    </div>
+
+    <div id="welcome-text">
+        <h1>Ulduzlararası Səyahət Başladı 🌌</h1>
+        <p style="font-size: 1.2rem; color: #aaa; letter-spacing: 2px;">Cornfield Chase sədaları altında...</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        let scene, camera, renderer, stars, planets = [];
+        let isActivated = false;
+        let transitionProgress = 0; 
+        let mouseX = 0, mouseY = 0;
+
+        function init() {
+            const container = document.getElementById('canvas-container');
+            
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            // Kamera ilkin olaraq çox yaxındadır (Dramatik keçid üçün)
+            camera.position.z = 30;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            // İşıqlar
+            const ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+
+            const sunLight = new THREE.PointLight(0xffffff, 3, 500);
+            sunLight.position.set(0, 0, 0);
+            scene.add(sunLight);
+
+            // GÖY ÜZÜ: 5000 Parıldayan Ulduz
+            const starGeo = new THREE.BufferGeometry();
+            const starCount = 5000;
+            const starPositions = new Float32Array(starCount * 3);
+
+            for(let i=0; i < starCount * 3; i++) {
+                starPositions[i] = (Math.random() - 0.5) * 600;
+            }
+
+            starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+            const starMaterial = new THREE.PointsMaterial({ 
+                color: 0xffffff, 
+                size: 0.4,
+                transparent: true,
+                opacity: 0.8
+            });
+            stars = new THREE.Points(starGeo, starMaterial);
+            scene.add(stars);
+
+            // PLANETLƏR: Rəngli və fərqli ölçülü kürələr
+            const planetData = [
+                { size: 1.2, color: 0x4fb3ff, dist: 8, speed: 0.015 },  // Mavi planet
+                { size: 1.8, color: 0xff7b54, dist: 14, speed: 0.01 },  // Mars tipli
+                { size: 1.0, color: 0xffdd67, dist: 19, speed: 0.008 }, // Saturn tipli qızılı
+                { size: 2.5, color: 0xa16eff, dist: 26, speed: 0.005 }, // Böyük qaz nəhəngi
+                { size: 0.8, color: 0x6effbf, dist: 32, speed: 0.003 }  // Kiçik ekzoplanet
+            ];
+
+            planetData.forEach((data) => {
+                const geometry = new THREE.SphereGeometry(data.size, 32, 32);
+                const material = new THREE.MeshStandardMaterial({
+                    color: data.color,
+                    roughness: 0.6,
+                    metalness: 0.2
+                });
+                const planet = new THREE.Mesh(geometry, material);
+                
+                planet.userData = {
+                    distance: data.dist,
+                    speed: data.speed,
+                    angle: Math.random() * Math.PI * 2
+                };
+                
+                scene.add(planet);
+                planets.push(planet);
+            });
+
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('mousemove', onMouseMove);
+            
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Giriş olunmazdan əvvəlki sakit fırlanma
+            if (!isActivated) {
+                stars.rotation.y += 0.0002;
+                planets.forEach((planet, index) => {
+                    planet.position.x = Math.cos(index + Date.now() * 0.0001) * planet.userData.distance;
+                    planet.position.z = Math.sin(index + Date.now() * 0.0001) * planet.userData.distance;
+                    planet.rotation.y += 0.005;
+                });
+            } 
+            // Giriş edildikdən sonra keçid animasiyası və sürətli hərəkət
+            else {
+                // Kameranın kosmosun içinə doğru dramatik şəkildə çəkilməsi (Keçid effekti)
+                if (transitionProgress < 1) {
+                    transitionProgress += 0.01;
+                    camera.position.z = THREE.MathUtils.lerp(30, 18, transitionProgress);
+                }
+
+                // Göy üzünün (Ulduzların) möhtəşəm fırlanması
+                stars.rotation.y += 0.004;
+                stars.rotation.x += 0.001;
+
+                // Planetlərin öz orbitləri və oxları ətrafında fırlanması
+                planets.forEach(planet => {
+                    planet.userData.angle += planet.userData.speed;
+                    planet.position.x = Math.cos(planet.userData.angle) * planet.userData.distance;
+                    planet.position.z = Math.sin(planet.userData.angle) * planet.userData.distance;
+                    planet.rotation.y += 0.02; // Planetin öz oxu
+                });
+
+                // Mausa görə kameranın yumşaq hərəkəti (İnteraktiv kosmos effekti)
+                camera.position.x += (mouseX * 8 - camera.position.x) * 0.05;
+                camera.position.y += (-mouseY * 8 - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Qeydiyyat düyməsi sıxılanda bura işə düşür
+        function startUniverse(event) {
+            event.preventDefault();
+            
+            // Musiqini başlatmaq
+            const music = document.getElementById('bgMusic');
+            music.play().catch(error => {
+                console.log("Musiqi yüklənmə xətası və ya brauzer icazəsi:", error);
+            });
+            
+            // Paneli animasiya ilə gizlət
+            document.getElementById('loginBox').classList.add('hide');
+            
+            // Animasiya keçidini aktivləşdir
+            isActivated = true;
+
+            // Yazını ekrana gətir
+            setTimeout(() => {
+                document.getElementById('welcome-text').classList.add('show');
+            }, 800);
+        }
+
+        function onMouseMove(event) {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
