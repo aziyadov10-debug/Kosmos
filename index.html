@@ -1,374 +1,183 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sonsuz Kosmos - Siluet</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap" rel="stylesheet">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cosmic Universe</title>
 
-        body, html {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #010105;
-        }
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-        #canvas-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
+body{
+    overflow:hidden;
+    background:black;
+}
 
-        /* Glassmorphism Panel */
-        .login-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10;
-            width: 85%;
-            max-width: 360px;
-            padding: 35px 25px;
-            background: rgba(255, 255, 255, 0.01);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 24px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
-            text-align: center;
-            transition: all 1.2s ease-in-out;
-        }
-
-        .login-container.hide {
-            opacity: 0;
-            visibility: hidden;
-            transform: translate(-50%, -85%) scale(0.8);
-        }
-
-        .login-container h2 {
-            color: #fff;
-            margin-bottom: 30px;
-            font-weight: 300;
-            letter-spacing: 2px;
-            font-size: 1.4rem;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 14px 20px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 30px;
-            outline: none;
-            color: #fff;
-            font-size: 15px;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(45deg, #090d16, #1f2937);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 30px;
-            color: white;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-    </style>
+canvas{
+    display:block;
+}
+</style>
 </head>
 <body>
 
-    <audio id="bgMusic" loop>
-        <source src="https://www.soundboard.com/media/audio/7b79da7c-5026-474a-a2b1-12c85f1cbf50.mp3" type="audio/mpeg">
-    </audio>
+<script type="module">
 
-    <div id="canvas-container"></div>
+import * as THREE from "https://unpkg.com/three@0.165.0/build/three.module.js";
 
-    <div class="login-container" id="loginBox">
-        <h2>Kainata Giriş</h2>
-        <form id="loginForm" onsubmit="startUniverse(event)">
-            <div class="input-group">
-                <input type="text" placeholder="Adınız" required>
-            </div>
-            <div class="input-group">
-                <input type="password" placeholder="Giriş Kodu" required>
-            </div>
-            <button type="submit" class="submit-btn">Kainatı Başlat</button>
-        </form>
-    </div>
+const scene = new THREE.Scene();
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+const camera = new THREE.PerspectiveCamera(
+75,
+window.innerWidth/window.innerHeight,
+0.1,
+5000
+);
 
-    <script>
-        let scene, camera, renderer;
-        let stars, meteors = [];
-        let isActivated = false;
-        let targetRotationX = 0, targetRotationY = 0;
-        let currentRotationX = 0, currentRotationY = 0;
+camera.position.z = 10;
 
-        function init() {
-            const container = document.getElementById('canvas-container');
-            scene = new THREE.Scene();
-            
-            // Dərin qaranlıq kosmos dumanlığı fona tətbiq edilir
-            scene.background = new THREE.Color(0x020206);
-            scene.fog = new THREE.FogExp2(0x020206, 0.015);
+const renderer = new THREE.WebGLRenderer({
+antialias:true
+});
 
-            camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
-            
-            // Kamera tam olaraq insanın göz səviyyəsində - Skamekada oturmuş vəziyyətdədir
-            camera.position.set(0, 5, 0); 
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+document.body.appendChild(renderer.domElement);
 
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            container.appendChild(renderer.domElement);
+// Stars
 
-            // Zəif Ay işığı və Ətraf mühit işığı (Siluetlərin bir az bəlli olması üçün)
-            const ambientLight = new THREE.AmbientLight(0x0a0a1a, 0.5);
-            scene.add(ambientLight);
+const starGeometry = new THREE.BufferGeometry();
 
-            const starlight = new THREE.DirectionalLight(0x85a3ff, 0.6);
-            starlight.position.set(5, 20, 5);
-            scene.add(starlight);
+const starCount = 25000;
 
-            // 1. GÖY ÜZÜ (Ulduzlar məkanı)
-            const starGeo = new THREE.BufferGeometry();
-            const starCount = 6000;
-            const starPositions = new Float32Array(starCount * 3);
-            for(let i=0; i < starCount * 3; i+=3) {
-                starPositions[i] = (Math.random() - 0.5) * 500;
-                starPositions[i+1] = Math.random() * 200; // Səmanı əhatə etsinlər
-                starPositions[i+2] = (Math.random() - 0.5) * 500;
-            }
-            starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.4, transparent: true });
-            stars = new THREE.Points(starGeo, starMaterial);
-            scene.add(stars);
+const positions = [];
 
-            // 2. 3D SKAMEKA (Baxanda ayaqlarımızın altında qalan hissə)
-            const benchMat = new THREE.MeshStandardMaterial({ color: 0x020204, roughness: 0.9 });
-            
-            // Skamekanın oturacaq taxtası
-            const seatGeo = new THREE.BoxGeometry(6, 0.1, 1.8);
-            const seat = new THREE.Mesh(seatGeo, benchMat);
-            seat.position.set(0, 3.8, -0.2);
-            scene.add(seat);
+for(let i=0;i<starCount;i++){
 
-            // Skamekanın söykənəcəyi
-            const backGeo = new THREE.BoxGeometry(6, 1.2, 0.1);
-            const backrest = new THREE.Mesh(backGeo, benchMat);
-            backrest.position.set(0, 4.8, 0.6);
-            scene.add(backrest);
+positions.push(
+(Math.random()-0.5)*3000,
+(Math.random()-0.5)*3000,
+(Math.random()-0.5)*3000
+);
 
-            // 3. İNSANIN ÖZ BƏDƏNİ (Gözündən baxdığımız üçün aşağı baxanda görünən əllər və ayaqlar)
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x010103, roughness: 1.0 });
+}
 
-            // Ayaqlar (Bud qismi)
-            const legGeo = new THREE.CylinderGeometry(0.18, 0.15, 2, 16);
-            const leftLeg = new THREE.Mesh(legGeo, bodyMat);
-            leftLeg.rotation.x = Math.PI / 2;
-            leftLeg.position.set(-0.6, 3.8, -1);
-            scene.add(leftLeg);
+starGeometry.setAttribute(
+'position',
+new THREE.Float32BufferAttribute(positions,3)
+);
 
-            const rightLeg = new THREE.Mesh(legGeo, bodyMat);
-            rightLeg.rotation.x = Math.PI / 2;
-            rightLeg.position.set(0.6, 3.8, -1);
-            scene.add(rightLeg);
+const starMaterial = new THREE.PointsMaterial({
+size:1.2,
+transparent:true
+});
 
-            // Aşağı uzanan ayaq hissələri
-            const shinGeo = new THREE.CylinderGeometry(0.15, 0.12, 3.8, 16);
-            const leftShin = new THREE.Mesh(shinGeo, bodyMat);
-            leftShin.position.set(-0.6, 1.9, -2);
-            scene.add(leftShin);
+const stars = new THREE.Points(
+starGeometry,
+starMaterial
+);
 
-            const rightShin = new THREE.Mesh(shinGeo, bodyMat);
-            rightShin.position.set(0.6, 1.9, -2);
-            scene.add(rightShin);
+scene.add(stars);
 
-            // Əllər (Skamekanın üstündə)
-            const armGeo = new THREE.CylinderGeometry(0.12, 0.1, 1.5, 16);
-            const leftArm = new THREE.Mesh(armGeo, bodyMat);
-            leftArm.rotation.x = Math.PI / 3;
-            leftArm.position.set(-1.1, 4.2, -0.3);
-            scene.add(leftArm);
+// Galaxy Core
 
-            const rightArm = new THREE.Mesh(armGeo, bodyMat);
-            rightArm.rotation.x = Math.PI / 3;
-            rightArm.position.set(1.1, 4.2, -0.3);
-            scene.add(rightArm);
+const galaxyGeometry = new THREE.BufferGeometry();
 
-            // 4. REALİSTİK İT SİLUETİ (Sağ tərəfimizdə oturan real formalı it)
-            const dogGroup = new THREE.Group();
-            
-            // İtin bədəni
-            const dogBodyGeo = new THREE.CylinderGeometry(0.3, 0.35, 1.4, 16);
-            const dogBody = new THREE.Mesh(dogBodyGeo, bodyMat);
-            dogBody.rotation.x = -Math.PI / 4; // Oturma pozası
-            dogBody.position.set(0, 0.5, 0);
-            dogGroup.add(dogBody);
+const galaxyPositions = [];
 
-            // İtin boynu və başı
-            const dogHeadGeo = new THREE.SphereGeometry(0.22, 16, 16);
-            const dogHead = new THREE.Mesh(dogHeadGeo, bodyMat);
-            dogHead.position.set(0, 1.3, -0.3);
-            dogGroup.add(dogHead);
+for(let i=0;i<10000;i++){
 
-            // İtin burnu/ağzı (Real görünüş üçün)
-            const snoutGeo = new THREE.ConeGeometry(0.12, 0.3, 16);
-            const dogSnout = new THREE.Mesh(snoutGeo, bodyMat);
-            dogSnout.rotation.x = -Math.PI / 2;
-            dogSnout.position.set(0, 1.3, -0.5);
-            dogGroup.add(dogSnout);
+const radius = Math.random()*120;
 
-            // Qulaqlar (Dik duran real qulaq quruluşu)
-            const earGeo = new THREE.ConeGeometry(0.07, 0.25, 4);
-            const leftEar = new THREE.Mesh(earGeo, bodyMat);
-            leftEar.position.set(-0.12, 1.5, -0.2);
-            dogGroup.add(leftEar);
+const angle = radius * 0.4;
 
-            const rightEar = new THREE.Mesh(earGeo, bodyMat);
-            rightEar.position.set(0.12, 1.5, -0.2);
-            dogGroup.add(rightEar);
+galaxyPositions.push(
+Math.cos(angle)*radius,
+(Math.random()-0.5)*15,
+Math.sin(angle)*radius
+);
 
-            // İtin ön ayaqları
-            const dogLegGeo = new THREE.CylinderGeometry(0.08, 0.08, 1.2, 16);
-            const dogLegL = new THREE.Mesh(dogLegGeo, bodyMat);
-            dogLegL.position.set(-0.2, 0.2, -0.4);
-            dogGroup.add(dogLegL);
+}
 
-            const dogLegR = new THREE.Mesh(dogLegGeo, bodyMat);
-            dogLegR.position.set(0.2, 0.2, -0.4);
-            dogGroup.add(dogLegR);
+galaxyGeometry.setAttribute(
+'position',
+new THREE.Float32BufferAttribute(galaxyPositions,3)
+);
 
-            dogGroup.position.set(1.8, 3.8, -0.2); // Skamekanın sağında yerləşir
-            scene.add(dogGroup);
+const galaxyMaterial = new THREE.PointsMaterial({
+size:1.5
+});
 
-            // Zəmin (Uzaq qaranlıq təpələr)
-            const groundGeo = new THREE.PlaneGeometry(1000, 1000);
-            const groundMat = new THREE.MeshStandardMaterial({ color: 0x010104, roughness: 1.0 });
-            const ground = new THREE.Mesh(groundGeo, groundMat);
-            ground.rotation.x = -Math.PI / 2;
-            ground.position.y = 0;
-            scene.add(ground);
+const galaxy = new THREE.Points(
+galaxyGeometry,
+galaxyMaterial
+);
 
-            // İdarəetmə hadisələri (Maus və toxunuş)
-            window.addEventListener('resize', onWindowResize);
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('touchmove', onTouchMove, { passive: false });
+scene.add(galaxy);
 
-            animate();
-        }
+// Nebula
 
-        // Real 3D Meteoridlərin hərəkəti
-        function createMeteor() {
-            if (meteors.length < 5) {
-                const geometry = new THREE.BufferGeometry();
-                const positions = new Float32Array(2 * 3);
-                
-                const startX = (Math.random() - 0.5) * 300;
-                const startY = 80 + Math.random() * 40;
-                const startZ = -150 - Math.random() * 50;
+const nebulaGeo = new THREE.SphereGeometry(50,64,64);
 
-                positions[0] = startX; positions[1] = startY; positions[2] = startZ;
-                positions[3] = startX + 40; positions[4] = startY - 25; positions[5] = startZ + 30;
+const nebulaMat = new THREE.MeshBasicMaterial({
+transparent:true,
+opacity:0.04
+});
 
-                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                const material = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 });
-                const line = new THREE.Line(geometry, material);
+const nebula = new THREE.Mesh(
+nebulaGeo,
+nebulaMat
+);
 
-                scene.add(line);
-                meteors.push({
-                    mesh: line,
-                    speedX: 2.5,
-                    speedY: -1.5,
-                    speedZ: 1.8,
-                    opacity: 1
-                });
-            }
-        }
+scene.add(nebula);
 
-        function animate() {
-            requestAnimationFrame(animate);
+// Mouse Movement
 
-            // Başın hərəkətinin yumşaldılması (Gözlə baxış effekti)
-            currentRotationX += (targetRotationX - currentRotationX) * 0.06;
-            currentRotationY += (targetRotationY - currentRotationY) * 0.06;
+let mouseX = 0;
+let mouseY = 0;
 
-            camera.rotation.y = currentRotationX;
-            camera.rotation.x = currentRotationY;
+document.addEventListener("mousemove",(e)=>{
+mouseX = (e.clientX/window.innerWidth - 0.5);
+mouseY = (e.clientY/window.innerHeight - 0.5);
+});
 
-            // Ulduzların real səmada olduğu kimi çox yavaş dönməsi
-            stars.rotation.y += 0.0001;
+// Animation
 
-            if (isActivated) {
-                // Səmadakı meteor axını hərəkətləri
-                meteors.forEach((m, index) => {
-                    m.mesh.position.x += m.speedX;
-                    m.mesh.position.y += m.speedY;
-                    m.mesh.position.z += m.speedZ;
-                    m.opacity -= 0.012;
-                    m.mesh.material.opacity = m.opacity;
+function animate(){
 
-                    if (m.opacity <= 0 || m.mesh.position.y < 0) {
-                        scene.remove(m.mesh);
-                        meteors.splice(index, 1);
-                    }
-                });
+requestAnimationFrame(animate);
 
-                if (Math.random() < 0.03) createMeteor();
-            }
+stars.rotation.y += 0.00015;
+stars.rotation.x += 0.00005;
 
-            renderer.render(scene, camera);
-        }
+galaxy.rotation.y += 0.0008;
 
-        function startUniverse(event) {
-            event.preventDefault();
-            const music = document.getElementById('bgMusic');
-            music.volume = 0.85;
-            music.play().catch(err => console.log(err));
-            
-            document.getElementById('loginBox').classList.add('hide');
-            isActivated = true;
-        }
+camera.position.x += (mouseX*10 - camera.position.x)*0.02;
+camera.position.y += (-mouseY*10 - camera.position.y)*0.02;
 
-        // İnsanın gözüylə ətrafa baxma bucaqlarının təyini
-        function onMouseMove(event) {
-            // Sağ-sol hərəkət limitləri və aşağı-yuxarı baxış bucaqları
-            targetRotationX = -(event.clientX / window.innerWidth - 0.5) * 2.5; 
-            targetRotationY = -(event.clientY / window.innerHeight - 0.5) * 1.5; 
-        }
+camera.lookAt(scene.position);
 
-        function onTouchMove(event) {
-            if (event.touches.length > 0) {
-                targetRotationX = -(event.touches[0].clientX / window.innerWidth - 0.5) * 2.8;
-                targetRotationY = -(event.touches[0].clientY / window.innerHeight - 0.5) * 1.8;
-            }
-        }
+renderer.render(scene,camera);
+}
 
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
+animate();
 
-        window.onload = init;
-    </script>
+window.addEventListener("resize",()=>{
+
+camera.aspect = window.innerWidth/window.innerHeight;
+camera.updateProjectionMatrix();
+
+renderer.setSize(
+window.innerWidth,
+window.innerHeight
+);
+
+});
+
+</script>
+
 </body>
 </html>
