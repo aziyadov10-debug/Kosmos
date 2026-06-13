@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gecə Səmada Səyahət</title>
+    <title>Sonsuz Kosmos - Siluet</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap" rel="stylesheet">
     
     <style>
@@ -18,11 +18,10 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: #020208;
+            background: #010105;
         }
 
-        /* Göy üzü və Mənzərə */
-        #space-container {
+        #canvas-container {
             position: absolute;
             top: 0;
             left: 0;
@@ -31,55 +30,30 @@
             z-index: 1;
         }
 
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Ön Plandakı Qara Siluet (Skamekada Oturan Adam və İti) */
-        .silhouette-scene {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 500px;
-            height: 220px;
-            z-index: 3;
-            pointer-events: none;
-            opacity: 0.4; /* Girişdən əvvəl yüngül görünür */
-            transition: opacity 2s ease-in-out;
-        }
-
-        .active .silhouette-scene {
-            opacity: 1; /* Girişdən sonra tam qara və net olur */
-        }
-
-        /* Glassmorphism Qeydiyyat Paneli */
+        /* Glassmorphism Panel */
         .login-container {
             position: absolute;
-            top: 45%;
+            top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 10;
             width: 85%;
             max-width: 360px;
             padding: 35px 25px;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.01);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 24px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
             text-align: center;
-            transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 1.2s ease-in-out;
         }
 
         .login-container.hide {
             opacity: 0;
             visibility: hidden;
-            transform: translate(-50%, -90%) scale(0.8);
+            transform: translate(-50%, -85%) scale(0.8);
         }
 
         .login-container h2 {
@@ -97,28 +71,24 @@
         .input-group input {
             width: 100%;
             padding: 14px 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 30px;
             outline: none;
             color: #fff;
             font-size: 15px;
-            transition: 0.3s;
         }
 
         .submit-btn {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(45deg, #111827, #374151);
+            background: linear-gradient(45deg, #090d16, #1f2937);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 30px;
             color: white;
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-            letter-spacing: 1px;
-            transition: 0.3s;
         }
     </style>
 </head>
@@ -128,24 +98,7 @@
         <source src="https://www.soundboard.com/media/audio/7b79da7c-5026-474a-a2b1-12c85f1cbf50.mp3" type="audio/mpeg">
     </audio>
 
-    <div id="space-container">
-        <canvas id="skyCanvas"></canvas>
-    </div>
-
-    <div class="silhouette-scene" id="silhouetteBox">
-        <svg viewBox="0 0 500 220" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <path d="M 0 190 Q 250 170 500 190 L 500 220 L 0 220 Z" fill="#030309"/>
-            
-            <path d="M 190 180 L 310 178 M 195 165 L 305 163 M 190 165 L 190 195 M 310 163 L 310 193 M 220 179 L 220 190 M 280 178 L 280 189" stroke="#030309" stroke-width="4" fill="none"/>
-            <path d="M 195 150 L 195 165 M 305 148 L 305 163 M 195 152 L 305 150" stroke="#030309" stroke-width="3" fill="none"/>
-            
-            <path d="M 225 165 C 220 150, 225 135, 235 135 C 240 135, 245 140, 245 150 C 245 155, 250 160, 255 165 C 260 170, 250 180, 240 180 C 232 180, 228 175, 225 165 Z" fill="#030309"/>
-            <circle cx="233" cy="124" r="7" fill="#030309"/>
-            
-            <path d="M 275 180 C 270 175, 270 165, 275 160 C 280 155, 285 160, 285 168 C 290 168, 295 172, 295 180 Z" fill="#030309"/>
-            <path d="M 273 158 C 271 154, 275 150, 278 153 C 280 155, 277 158, 273 158 Z" fill="#030309"/>
-        </svg>
-    </div>
+    <div id="canvas-container"></div>
 
     <div class="login-container" id="loginBox">
         <h2>Kainata Giriş</h2>
@@ -160,128 +113,262 @@
         </form>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <script>
-        const canvas = document.getElementById('skyCanvas');
-        const ctx = canvas.getContext('2d');
-
-        let stars = [];
-        let meteors = [];
+        let scene, camera, renderer;
+        let stars, meteors = [];
         let isActivated = false;
-        let speedMultiplier = 1;
+        let targetRotationX = 0, targetRotationY = 0;
+        let currentRotationX = 0, currentRotationY = 0;
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            initStars();
-        }
+        function init() {
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            
+            // Dərin qaranlıq kosmos dumanlığı fona tətbiq edilir
+            scene.background = new THREE.Color(0x020206);
+            scene.fog = new THREE.FogExp2(0x020206, 0.015);
 
-        // Realistik ulduzların yaradılması
-        function initStars() {
-            stars = [];
-            const starCount = Math.floor((canvas.width * canvas.height) * 0.0015);
-            for (let i = 0; i < starCount; i++) {
-                stars.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height * 0.8, // Skamekadan yuxarıda olsunlar
-                    size: Math.random() * 1.5,
-                    opacity: Math.random(),
-                    factor: Math.random() * 0.02 + 0.005
-                });
+            camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            // Kamera tam olaraq insanın göz səviyyəsində - Skamekada oturmuş vəziyyətdədir
+            camera.position.set(0, 5, 0); 
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            // Zəif Ay işığı və Ətraf mühit işığı (Siluetlərin bir az bəlli olması üçün)
+            const ambientLight = new THREE.AmbientLight(0x0a0a1a, 0.5);
+            scene.add(ambientLight);
+
+            const starlight = new THREE.DirectionalLight(0x85a3ff, 0.6);
+            starlight.position.set(5, 20, 5);
+            scene.add(starlight);
+
+            // 1. GÖY ÜZÜ (Ulduzlar məkanı)
+            const starGeo = new THREE.BufferGeometry();
+            const starCount = 6000;
+            const starPositions = new Float32Array(starCount * 3);
+            for(let i=0; i < starCount * 3; i+=3) {
+                starPositions[i] = (Math.random() - 0.5) * 500;
+                starPositions[i+1] = Math.random() * 200; // Səmanı əhatə etsinlər
+                starPositions[i+2] = (Math.random() - 0.5) * 500;
             }
+            starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.4, transparent: true });
+            stars = new THREE.Points(starGeo, starMaterial);
+            scene.add(stars);
+
+            // 2. 3D SKAMEKA (Baxanda ayaqlarımızın altında qalan hissə)
+            const benchMat = new THREE.MeshStandardMaterial({ color: 0x020204, roughness: 0.9 });
+            
+            // Skamekanın oturacaq taxtası
+            const seatGeo = new THREE.BoxGeometry(6, 0.1, 1.8);
+            const seat = new THREE.Mesh(seatGeo, benchMat);
+            seat.position.set(0, 3.8, -0.2);
+            scene.add(seat);
+
+            // Skamekanın söykənəcəyi
+            const backGeo = new THREE.BoxGeometry(6, 1.2, 0.1);
+            const backrest = new THREE.Mesh(backGeo, benchMat);
+            backrest.position.set(0, 4.8, 0.6);
+            scene.add(backrest);
+
+            // 3. İNSANIN ÖZ BƏDƏNİ (Gözündən baxdığımız üçün aşağı baxanda görünən əllər və ayaqlar)
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x010103, roughness: 1.0 });
+
+            // Ayaqlar (Bud qismi)
+            const legGeo = new THREE.CylinderGeometry(0.18, 0.15, 2, 16);
+            const leftLeg = new THREE.Mesh(legGeo, bodyMat);
+            leftLeg.rotation.x = Math.PI / 2;
+            leftLeg.position.set(-0.6, 3.8, -1);
+            scene.add(leftLeg);
+
+            const rightLeg = new THREE.Mesh(legGeo, bodyMat);
+            rightLeg.rotation.x = Math.PI / 2;
+            rightLeg.position.set(0.6, 3.8, -1);
+            scene.add(rightLeg);
+
+            // Aşağı uzanan ayaq hissələri
+            const shinGeo = new THREE.CylinderGeometry(0.15, 0.12, 3.8, 16);
+            const leftShin = new THREE.Mesh(shinGeo, bodyMat);
+            leftShin.position.set(-0.6, 1.9, -2);
+            scene.add(leftShin);
+
+            const rightShin = new THREE.Mesh(shinGeo, bodyMat);
+            rightShin.position.set(0.6, 1.9, -2);
+            scene.add(rightShin);
+
+            // Əllər (Skamekanın üstündə)
+            const armGeo = new THREE.CylinderGeometry(0.12, 0.1, 1.5, 16);
+            const leftArm = new THREE.Mesh(armGeo, bodyMat);
+            leftArm.rotation.x = Math.PI / 3;
+            leftArm.position.set(-1.1, 4.2, -0.3);
+            scene.add(leftArm);
+
+            const rightArm = new THREE.Mesh(armGeo, bodyMat);
+            rightArm.rotation.x = Math.PI / 3;
+            rightArm.position.set(1.1, 4.2, -0.3);
+            scene.add(rightArm);
+
+            // 4. REALİSTİK İT SİLUETİ (Sağ tərəfimizdə oturan real formalı it)
+            const dogGroup = new THREE.Group();
+            
+            // İtin bədəni
+            const dogBodyGeo = new THREE.CylinderGeometry(0.3, 0.35, 1.4, 16);
+            const dogBody = new THREE.Mesh(dogBodyGeo, bodyMat);
+            dogBody.rotation.x = -Math.PI / 4; // Oturma pozası
+            dogBody.position.set(0, 0.5, 0);
+            dogGroup.add(dogBody);
+
+            // İtin boynu və başı
+            const dogHeadGeo = new THREE.SphereGeometry(0.22, 16, 16);
+            const dogHead = new THREE.Mesh(dogHeadGeo, bodyMat);
+            dogHead.position.set(0, 1.3, -0.3);
+            dogGroup.add(dogHead);
+
+            // İtin burnu/ağzı (Real görünüş üçün)
+            const snoutGeo = new THREE.ConeGeometry(0.12, 0.3, 16);
+            const dogSnout = new THREE.Mesh(snoutGeo, bodyMat);
+            dogSnout.rotation.x = -Math.PI / 2;
+            dogSnout.position.set(0, 1.3, -0.5);
+            dogGroup.add(dogSnout);
+
+            // Qulaqlar (Dik duran real qulaq quruluşu)
+            const earGeo = new THREE.ConeGeometry(0.07, 0.25, 4);
+            const leftEar = new THREE.Mesh(earGeo, bodyMat);
+            leftEar.position.set(-0.12, 1.5, -0.2);
+            dogGroup.add(leftEar);
+
+            const rightEar = new THREE.Mesh(earGeo, bodyMat);
+            rightEar.position.set(0.12, 1.5, -0.2);
+            dogGroup.add(rightEar);
+
+            // İtin ön ayaqları
+            const dogLegGeo = new THREE.CylinderGeometry(0.08, 0.08, 1.2, 16);
+            const dogLegL = new THREE.Mesh(dogLegGeo, bodyMat);
+            dogLegL.position.set(-0.2, 0.2, -0.4);
+            dogGroup.add(dogLegL);
+
+            const dogLegR = new THREE.Mesh(dogLegGeo, bodyMat);
+            dogLegR.position.set(0.2, 0.2, -0.4);
+            dogGroup.add(dogLegR);
+
+            dogGroup.position.set(1.8, 3.8, -0.2); // Skamekanın sağında yerləşir
+            scene.add(dogGroup);
+
+            // Zəmin (Uzaq qaranlıq təpələr)
+            const groundGeo = new THREE.PlaneGeometry(1000, 1000);
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0x010104, roughness: 1.0 });
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = 0;
+            scene.add(ground);
+
+            // İdarəetmə hadisələri (Maus və toxunuş)
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('touchmove', onTouchMove, { passive: false });
+
+            animate();
         }
 
-        // Axan Ulduzlar (Meteoridlər) funksiyası
-        function spawnMeteor() {
-            if (!isActivated && Math.random() > 0.05) return; // Girişdən qabaq çox az axır
-            if (meteors.length < 4) {
+        // Real 3D Meteoridlərin hərəkəti
+        function createMeteor() {
+            if (meteors.length < 5) {
+                const geometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(2 * 3);
+                
+                const startX = (Math.random() - 0.5) * 300;
+                const startY = 80 + Math.random() * 40;
+                const startZ = -150 - Math.random() * 50;
+
+                positions[0] = startX; positions[1] = startY; positions[2] = startZ;
+                positions[3] = startX + 40; positions[4] = startY - 25; positions[5] = startZ + 30;
+
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const material = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 });
+                const line = new THREE.Line(geometry, material);
+
+                scene.add(line);
                 meteors.push({
-                    x: Math.random() * canvas.width * 0.8,
-                    y: 0,
-                    length: Math.random() * 80 + 40,
-                    speed: Math.random() * 12 + 6,
-                    thickness: Math.random() * 1.5 + 0.5,
+                    mesh: line,
+                    speedX: 2.5,
+                    speedY: -1.5,
+                    speedZ: 1.8,
                     opacity: 1
                 });
             }
         }
 
-        function draw() {
-            // Dərin qaranlıq göy üzü qradiyenti
-            let skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            skyGradient.addColorStop(0, '#02020a');
-            skyGradient.addColorStop(0.6, '#08071a');
-            skyGradient.addColorStop(1, '#110e2e');
-            ctx.fillStyle = skyGradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function animate() {
+            requestAnimationFrame(animate);
 
-            // Ulduzların parıldama animasiyası və yavaş fırlanması
-            ctx.fillStyle = "white";
-            stars.forEach(star => {
-                star.opacity += star.factor;
-                if (star.opacity > 1 || star.opacity < 0) {
-                    star.factor = -star.factor;
-                }
-                
-                // Girişdən sonra ulduzlar çox az hərəkət edir (Real səmada olduğu kimi)
-                if(isActivated) {
-                    star.x += 0.02 * speedMultiplier;
-                    if (star.x > canvas.width) star.x = 0;
-                }
+            // Başın hərəkətinin yumşaldılması (Gözlə baxış effekti)
+            currentRotationX += (targetRotationX - currentRotationX) * 0.06;
+            currentRotationY += (targetRotationY - currentRotationY) * 0.06;
 
-                ctx.globalAlpha = Math.max(0, Math.min(1, star.opacity));
-                ctx.beginPath();
-                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                ctx.fill();
-            });
-            ctx.globalAlpha = 1;
+            camera.rotation.y = currentRotationX;
+            camera.rotation.x = currentRotationY;
 
-            // Gəlib keçən Meteoridlərin çəkilməsi
-            meteors.forEach((m, index) => {
-                ctx.strokeStyle = `rgba(255, 255, 255, ${m.opacity})`;
-                ctx.lineWidth = m.thickness;
-                ctx.beginPath();
-                ctx.moveTo(m.x, m.y);
-                ctx.lineTo(m.x + m.length, m.y + m.length * 0.6); // Diaqonal axma bucağı
-                ctx.stroke();
+            // Ulduzların real səmada olduğu kimi çox yavaş dönməsi
+            stars.rotation.y += 0.0001;
 
-                // Hərəkət təyini
-                m.x += m.speed * speedMultiplier;
-                m.y += m.speed * 0.6 * speedMultiplier;
-                
-                if (isActivated) m.opacity -= 0.015; // Keçdikcə itmək effekti
+            if (isActivated) {
+                // Səmadakı meteor axını hərəkətləri
+                meteors.forEach((m, index) => {
+                    m.mesh.position.x += m.speedX;
+                    m.mesh.position.y += m.speedY;
+                    m.mesh.position.z += m.speedZ;
+                    m.opacity -= 0.012;
+                    m.mesh.material.opacity = m.opacity;
 
-                if (m.y > canvas.height || m.x > canvas.width || m.opacity <= 0) {
-                    meteors.splice(index, 1);
-                }
-            });
+                    if (m.opacity <= 0 || m.mesh.position.y < 0) {
+                        scene.remove(m.mesh);
+                        meteors.splice(index, 1);
+                    }
+                });
 
-            // Təsadüfi vaxtlarda yeni meteor çıxarmaq
-            if (Math.random() < 0.03) spawnMeteor();
+                if (Math.random() < 0.03) createMeteor();
+            }
 
-            requestAnimationFrame(draw);
+            renderer.render(scene, camera);
         }
 
         function startUniverse(event) {
             event.preventDefault();
-            
             const music = document.getElementById('bgMusic');
-            music.volume = 0.9;
-            music.play().catch(err => console.log("Musiqi xətası:", err));
+            music.volume = 0.85;
+            music.play().catch(err => console.log(err));
             
-            // Paneli gizlət
             document.getElementById('loginBox').classList.add('hide');
-            // Silueti tam canlandır
-            document.body.classList.add('active');
-            
             isActivated = true;
-            speedMultiplier = 1.5; // Girişdən sonra səmada hərəkət sürətlənir
         }
 
-        window.addEventListener('resize', resizeCanvas);
-        window.onload = () => {
-            resizeCanvas();
-            draw();
-        };
+        // İnsanın gözüylə ətrafa baxma bucaqlarının təyini
+        function onMouseMove(event) {
+            // Sağ-sol hərəkət limitləri və aşağı-yuxarı baxış bucaqları
+            targetRotationX = -(event.clientX / window.innerWidth - 0.5) * 2.5; 
+            targetRotationY = -(event.clientY / window.innerHeight - 0.5) * 1.5; 
+        }
+
+        function onTouchMove(event) {
+            if (event.touches.length > 0) {
+                targetRotationX = -(event.touches[0].clientX / window.innerWidth - 0.5) * 2.8;
+                targetRotationY = -(event.touches[0].clientY / window.innerHeight - 0.5) * 1.8;
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
