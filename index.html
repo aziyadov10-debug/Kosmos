@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sonsuz Kosmos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Gecə Səmada Səyahət</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap" rel="stylesheet">
     
     <style>
         * {
@@ -18,10 +18,11 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #03030c;
+            background: #020208;
         }
 
-        #canvas-container {
+        /* Göy üzü və Mənzərə */
+        #space-container {
             position: absolute;
             top: 0;
             left: 0;
@@ -30,10 +31,35 @@
             z-index: 1;
         }
 
-        /* Glassmorphism Panel */
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Ön Plandakı Qara Siluet (Skamekada Oturan Adam və İti) */
+        .silhouette-scene {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 500px;
+            height: 220px;
+            z-index: 3;
+            pointer-events: none;
+            opacity: 0.4; /* Girişdən əvvəl yüngül görünür */
+            transition: opacity 2s ease-in-out;
+        }
+
+        .active .silhouette-scene {
+            opacity: 1; /* Girişdən sonra tam qara və net olur */
+        }
+
+        /* Glassmorphism Qeydiyyat Paneli */
         .login-container {
             position: absolute;
-            top: 50%;
+            top: 45%;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 10;
@@ -47,13 +73,13 @@
             border-radius: 24px;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
             text-align: center;
-            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .login-container.hide {
             opacity: 0;
             visibility: hidden;
-            transform: translate(-50%, -85%) scale(0.8);
+            transform: translate(-50%, -90%) scale(0.8);
         }
 
         .login-container h2 {
@@ -80,28 +106,19 @@
             transition: 0.3s;
         }
 
-        .input-group input:focus {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 255, 255, 0.5);
-        }
-
         .submit-btn {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(45deg, #1e40af, #6b21a8);
-            border: none;
+            background: linear-gradient(45deg, #111827, #374151);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 30px;
             color: white;
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 4px 20px rgba(107, 33, 168, 0.4);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
             letter-spacing: 1px;
             transition: 0.3s;
-        }
-
-        .submit-btn:hover {
-            box-shadow: 0 6px 25px rgba(30, 64, 175, 0.6);
         }
     </style>
 </head>
@@ -109,10 +126,26 @@
 
     <audio id="bgMusic" loop>
         <source src="https://www.soundboard.com/media/audio/7b79da7c-5026-474a-a2b1-12c85f1cbf50.mp3" type="audio/mpeg">
-        <source src="https://ia801602.us.archive.org/11/items/hans-zimmer-cornfield-chase/Hans%20Zimmer%20-%20Cornfield%20Chase.mp3" type="audio/mpeg">
     </audio>
 
-    <div id="canvas-container"></div>
+    <div id="space-container">
+        <canvas id="skyCanvas"></canvas>
+    </div>
+
+    <div class="silhouette-scene" id="silhouetteBox">
+        <svg viewBox="0 0 500 220" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 0 190 Q 250 170 500 190 L 500 220 L 0 220 Z" fill="#030309"/>
+            
+            <path d="M 190 180 L 310 178 M 195 165 L 305 163 M 190 165 L 190 195 M 310 163 L 310 193 M 220 179 L 220 190 M 280 178 L 280 189" stroke="#030309" stroke-width="4" fill="none"/>
+            <path d="M 195 150 L 195 165 M 305 148 L 305 163 M 195 152 L 305 150" stroke="#030309" stroke-width="3" fill="none"/>
+            
+            <path d="M 225 165 C 220 150, 225 135, 235 135 C 240 135, 245 140, 245 150 C 245 155, 250 160, 255 165 C 260 170, 250 180, 240 180 C 232 180, 228 175, 225 165 Z" fill="#030309"/>
+            <circle cx="233" cy="124" r="7" fill="#030309"/>
+            
+            <path d="M 275 180 C 270 175, 270 165, 275 160 C 280 155, 285 160, 285 168 C 290 168, 295 172, 295 180 Z" fill="#030309"/>
+            <path d="M 273 158 C 271 154, 275 150, 278 153 C 280 155, 277 158, 273 158 Z" fill="#030309"/>
+        </svg>
+    </div>
 
     <div class="login-container" id="loginBox">
         <h2>Kainata Giriş</h2>
@@ -127,163 +160,128 @@
         </form>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
     <script>
-        let scene, camera, renderer, stars, planets = [];
+        const canvas = document.getElementById('skyCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let stars = [];
+        let meteors = [];
         let isActivated = false;
-        let transitionProgress = 0; 
-        let mouseX = 0, mouseY = 0;
+        let speedMultiplier = 1;
 
-        function init() {
-            const container = document.getElementById('canvas-container');
-            
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 50;
-
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            container.appendChild(renderer.domElement);
-
-            // Çoxölçülü Kosmik İşıqlandırma
-            const ambientLight = new THREE.AmbientLight(0x111122, 0.6);
-            scene.add(ambientLight);
-
-            const sunLight = new THREE.DirectionalLight(0xffffff, 2.0);
-            sunLight.position.set(20, 10, 20);
-            scene.add(sunLight);
-
-            // Əlavə rəngli kosmik işıq parıltısı (Realistik ab-hava üçün)
-            const nebulaLight = new THREE.PointLight(0x7c3aed, 1.5, 100);
-            nebulaLight.position.set(-15, -10, -10);
-            scene.add(nebulaLight);
-
-            // Zəngin Ulduz Fonu (Parıldayan effekt)
-            const starGeo = new THREE.BufferGeometry();
-            const starCount = 5000;
-            const starPositions = new Float32Array(starCount * 3);
-
-            for(let i=0; i < starCount * 3; i++) {
-                starPositions[i] = (Math.random() - 0.5) * 600;
-            }
-
-            starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.35, transparent: true, opacity: 0.9 });
-            stars = new THREE.Points(starGeo, starMaterial);
-            scene.add(stars);
-
-            // GENERASİYA OLUNMUŞ REALİSTİK PLANETLƏR (Şəkil istifadə etmədən möhtəşəm rəng keçidləri)
-            const planetData = [
-                { size: 0.9, color: 0xe5e7eb, emissive: 0x1f2937, roughness: 0.9, dist: 14, speed: 0.012 }, // Kraterli Ay tipli
-                { size: 1.6, color: 0x2563eb, emissive: 0x1d4ed8, roughness: 0.4, dist: 22, speed: 0.009, hasAtmosphere: true }, // Okean planeti
-                { size: 1.2, color: 0xdc2626, emissive: 0x991b1b, roughness: 0.8, dist: 30, speed: 0.007 }, // Qırmızı Mars tipli
-                { size: 2.6, color: 0xd97706, emissive: 0xb45309, roughness: 0.6, dist: 40, speed: 0.005 }, // Nəhəng Yupiter tipli
-                { size: 1.0, color: 0x0d9488, emissive: 0x115e59, roughness: 0.5, dist: 50, speed: 0.003 }  // Buzlu Neptun tipli
-            ];
-
-            planetData.forEach((data) => {
-                // Səthi nahamar və real göstərmək üçün seqment sayını artırdıq (64x64)
-                const geometry = new THREE.SphereGeometry(data.size, 64, 64);
-                
-                // İşıq və kölgəyə real reaksiya verən material quruluşu
-                const material = new THREE.MeshStandardMaterial({
-                    color: data.color,
-                    emissive: data.emissive,
-                    emissiveIntensity: 0.2,
-                    roughness: data.roughness,
-                    metalness: 0.1,
-                    flatShading: false // Tamamilə hamar və yumşaq rəng keçidi
-                });
-                
-                const planet = new THREE.Mesh(geometry, material);
-                
-                planet.userData = {
-                    distance: data.dist,
-                    speed: data.speed,
-                    angle: Math.random() * Math.PI * 2
-                };
-                
-                scene.add(planet);
-                planets.push(planet);
-            });
-
-            window.addEventListener('resize', onWindowResize);
-            document.addEventListener('touchmove', onTouchMove, { passive: true });
-            document.addEventListener('mousemove', onMouseMove);
-            
-            animate();
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initStars();
         }
 
-        function animate() {
-            requestAnimationFrame(animate);
-
-            if (!isActivated) {
-                stars.rotation.y += 0.0001;
-                planets.forEach((planet, index) => {
-                    planet.position.x = Math.cos(index + Date.now() * 0.00003) * planet.userData.distance;
-                    planet.position.z = Math.sin(index + Date.now() * 0.00003) * planet.userData.distance;
-                    planet.rotation.y += 0.003;
+        // Realistik ulduzların yaradılması
+        function initStars() {
+            stars = [];
+            const starCount = Math.floor((canvas.width * canvas.height) * 0.0015);
+            for (let i = 0; i < starCount; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height * 0.8, // Skamekadan yuxarıda olsunlar
+                    size: Math.random() * 1.5,
+                    opacity: Math.random(),
+                    factor: Math.random() * 0.02 + 0.005
                 });
-            } else {
-                // Girişdən sonra kameranın sürətlə kosmosun içinə doğru irələməsi (Möhtəşəm keçid)
-                if (transitionProgress < 1) {
-                    transitionProgress += 0.008;
-                    camera.position.z = THREE.MathUtils.lerp(50, 32, transitionProgress);
+            }
+        }
+
+        // Axan Ulduzlar (Meteoridlər) funksiyası
+        function spawnMeteor() {
+            if (!isActivated && Math.random() > 0.05) return; // Girişdən qabaq çox az axır
+            if (meteors.length < 4) {
+                meteors.push({
+                    x: Math.random() * canvas.width * 0.8,
+                    y: 0,
+                    length: Math.random() * 80 + 40,
+                    speed: Math.random() * 12 + 6,
+                    thickness: Math.random() * 1.5 + 0.5,
+                    opacity: 1
+                });
+            }
+        }
+
+        function draw() {
+            // Dərin qaranlıq göy üzü qradiyenti
+            let skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            skyGradient.addColorStop(0, '#02020a');
+            skyGradient.addColorStop(0.6, '#08071a');
+            skyGradient.addColorStop(1, '#110e2e');
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Ulduzların parıldama animasiyası və yavaş fırlanması
+            ctx.fillStyle = "white";
+            stars.forEach(star => {
+                star.opacity += star.factor;
+                if (star.opacity > 1 || star.opacity < 0) {
+                    star.factor = -star.factor;
+                }
+                
+                // Girişdən sonra ulduzlar çox az hərəkət edir (Real səmada olduğu kimi)
+                if(isActivated) {
+                    star.x += 0.02 * speedMultiplier;
+                    if (star.x > canvas.width) star.x = 0;
                 }
 
-                // Göy üzünün (Ulduzların) fırlanması
-                stars.rotation.y += 0.0015;
-                stars.rotation.x += 0.0003;
+                ctx.globalAlpha = Math.max(0, Math.min(1, star.opacity));
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
 
-                // Planetlərin orbit və öz oxları ətrafında real hərəkəti
-                planets.forEach(planet => {
-                    planet.userData.angle += planet.userData.speed * 0.7;
-                    planet.position.x = Math.cos(planet.userData.angle) * planet.userData.distance;
-                    planet.position.z = Math.sin(planet.userData.angle) * planet.userData.distance;
-                    planet.rotation.y += 0.015; // Öz oxu ətrafında fırlanma
-                });
+            // Gəlib keçən Meteoridlərin çəkilməsi
+            meteors.forEach((m, index) => {
+                ctx.strokeStyle = `rgba(255, 255, 255, ${m.opacity})`;
+                ctx.lineWidth = m.thickness;
+                ctx.beginPath();
+                ctx.moveTo(m.x, m.y);
+                ctx.lineTo(m.x + m.length, m.y + m.length * 0.6); // Diaqonal axma bucağı
+                ctx.stroke();
 
-                // Sensor və maus hərəkətinə görə kameranın yumşaq reaksiyası
-                camera.position.x += (mouseX * 15 - camera.position.x) * 0.05;
-                camera.position.y += (-mouseY * 15 - camera.position.y) * 0.05;
-                camera.lookAt(scene.position);
-            }
+                // Hərəkət təyini
+                m.x += m.speed * speedMultiplier;
+                m.y += m.speed * 0.6 * speedMultiplier;
+                
+                if (isActivated) m.opacity -= 0.015; // Keçdikcə itmək effekti
 
-            renderer.render(scene, camera);
+                if (m.y > canvas.height || m.x > canvas.width || m.opacity <= 0) {
+                    meteors.splice(index, 1);
+                }
+            });
+
+            // Təsadüfi vaxtlarda yeni meteor çıxarmaq
+            if (Math.random() < 0.03) spawnMeteor();
+
+            requestAnimationFrame(draw);
         }
 
         function startUniverse(event) {
             event.preventDefault();
             
             const music = document.getElementById('bgMusic');
-            music.volume = 0.85;
+            music.volume = 0.9;
             music.play().catch(err => console.log("Musiqi xətası:", err));
             
+            // Paneli gizlət
             document.getElementById('loginBox').classList.add('hide');
+            // Silueti tam canlandır
+            document.body.classList.add('active');
+            
             isActivated = true;
+            speedMultiplier = 1.5; // Girişdən sonra səmada hərəkət sürətlənir
         }
 
-        function onMouseMove(event) {
-            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
-            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
-        }
-
-        function onTouchMove(event) {
-            if(event.touches.length > 0) {
-                mouseX = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
-                mouseY = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
-            }
-        }
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        window.onload = init;
+        window.addEventListener('resize', resizeCanvas);
+        window.onload = () => {
+            resizeCanvas();
+            draw();
+        };
     </script>
 </body>
 </html>
